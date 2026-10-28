@@ -1,0 +1,36 @@
+{
+  "known_sites": [
+    {
+      "name": "科研大楼",
+      "aliases": ["科研楼", "research building", "research"],
+      "endpoint_id": "h_research",
+      "ip_prefix": "192.168.10.0/24",
+      "roles": ["source"],
+      "device_id": "device:bmv2:5"
+    },
+    {
+      "name": "数据中心",
+      "aliases": ["data center", "dc"],
+      "endpoint_id": "h_dc",
+      "ip_prefix": "10.0.0.0/8",
+      "roles": ["destination"],
+      "device_id": "device:bmv2:6"
+    },
+    {
+      "name": "AI大楼",
+      "aliases": ["ai building", "ai"],
+      "endpoint_id": "h_ai",
+      "ip_prefix": "192.168.20.0/24",
+      "roles": ["source"],
+      "device_id": "device:bmv2:3"
+    },
+    {
+      "name": "视频主机",
+      "aliases": ["视频主机", "视频节点", "video host", "video node"],
+      "endpoint_id": "h_video",
+      "ip_prefix": "192.168.10.0/24",
+      "roles": ["source"],
+      "device_id": "device:bmv2:5"
+    }
+  ]
+}

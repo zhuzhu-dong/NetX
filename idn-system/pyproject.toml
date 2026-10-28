@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires docker-compose infra (ONOS + Mininet) running",
+    "live_llm: requires an explicitly configured external LLM provider",
+    "integration_llm: requires live LLM plus Docker network infrastructure",
+    "p4consistency: P4Info registry vs compiled p4info.txt consistency check",
+]

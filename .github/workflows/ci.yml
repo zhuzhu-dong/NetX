@@ -1,0 +1,46 @@
+name: Source checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests/release -v
+      - run: python scripts/audit_release.py
+  backend:
+    runs-on: ubuntu-latest
+    env:
+      IDN_MOCK_MODE: 'true'
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: idn-system/requirements.txt
+      - run: pip install -r idn-system/requirements.txt
+      - run: bash p4/compile.sh
+      - run: python -m pip check
+      - run: python -m pytest tests -m 'not integration' -q
+        working-directory: idn-system
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend

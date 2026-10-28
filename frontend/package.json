@@ -1,0 +1,28 @@
+{
+  "name": "idn-system-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "test": "node --test tests/*.test.mjs",
+    "test:router-production": "node tests/fullRouterProductionDom.browser.contract.mjs",
+    "test:responsive:e2e": "node --test tests/responsive.e2e.mjs",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "d3-dispatch": "^3.0.1",
+    "d3-force": "^3.0.0",
+    "echarts": "^5.6.0",
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0",
+    "vue-echarts": "^7.0.3",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.0",
+    "playwright-core": "^1.62.1",
+    "vite": "^6.0.0"
+  }
+}

@@ -1,0 +1,90 @@
+# ============================================================
+# docker-compose.infra.yml
+# 基础设施层: ONOS 控制器 + Mininet/BMv2 网络仿真
+# ============================================================
+name: idn-system
+
+services:
+  # ── ONOS SDN 控制器 ──
+  onos:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.onos
+    image: idn-onos:latest
+    container_name: idn-onos
+    restart: unless-stopped
+    ports:
+      # Controller and OpenFlow control ports are local diagnostics only.
+      # The public entry point is Nginx on 80/443; Mininet reaches ONOS over
+      # the Docker network, not through host-published ports.
+      - "127.0.0.1:8181:8181"
+      - "127.0.0.1:8101:8101"
+      - "127.0.0.1:6653:6653"
+    networks:
+      - idn-net
+    healthcheck:
+      # The root HTTP endpoint becomes available before ONOS core services.
+      # Wait for DeviceService so Mininet is not started against a half-ready
+      # controller that still returns 503 from /devices.
+      test: ["CMD-SHELL", "test -f /tmp/idn-onos-ready && curl -fsS -u onos:rocks --max-time 5 http://localhost:8181/onos/v1/devices > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+  mininet:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mininet
+    container_name: idn-mininet
+    restart: unless-stopped
+    privileged: true
+    depends_on:
+      onos:
+        condition: service_healthy
+    environment:
+      - TOPO_NAME=${TOPO_NAME:-research_dc}
+      - TOPOLOGY_PATHS_FILE=/app/config/topology_paths.json
+      - SERVICE_PROFILES_FILE=/app/config/service_profiles.json
+      # CPU placement is deployment configuration, not topology data.  With
+      # Default deployment placement keeps the active path on separate CPU
+      # groups; an experiment may replace this through BMV2_CPU_AFFINITY.
+      - BMV2_CPU_AFFINITY=${BMV2_CPU_AFFINITY:-s_core1=0-2,s_core2=15,s_agg_r=3-5,s_agg_d=6-8,s_access_r=9-11,s_access_d=12-14}
+      - MININET_UDP_RMEM_DEFAULT=${MININET_UDP_RMEM_DEFAULT:-1048576}
+      - MININET_UDP_WMEM_DEFAULT=${MININET_UDP_WMEM_DEFAULT:-1048576}
+      - MININET_UDP_RMEM_MIN=${MININET_UDP_RMEM_MIN:-65536}
+      - MININET_UDP_WMEM_MIN=${MININET_UDP_WMEM_MIN:-65536}
+      - MININET_TX_QUEUE_LEN=${MININET_TX_QUEUE_LEN:-1000}
+      # Do not force iperf3's -w buffer size.  A container's network
+      # namespace may cap SO_SNDBUF/SO_RCVBUF below a host-oriented 2 MiB
+      # default, which makes the service-validation client exit before it
+      # sends a packet.  Operators with a verified namespace limit may still
+      # set MININET_IPERF_SOCKET_BUFFER_BYTES explicitly.
+      - IDN_QOS_LEAF_LIMIT=${IDN_QOS_LEAF_LIMIT:-1000}
+      - IDN_QOS_LEAF_TARGET=${IDN_QOS_LEAF_TARGET:-5ms}
+      - IDN_QOS_LEAF_INTERVAL=${IDN_QOS_LEAF_INTERVAL:-100ms}
+      - IDN_QOS_HTB_QUANTUM_BYTES=${IDN_QOS_HTB_QUANTUM_BYTES:-1514}
+      - IDN_QOS_HTB_CBURST_KB=${IDN_QOS_HTB_CBURST_KB:-64}
+      - IDN_QOS_TC_SAMPLE_INTERVAL_SECONDS=${IDN_QOS_TC_SAMPLE_INTERVAL_SECONDS:-2.0}
+    command: >
+      python3 /app/mn/research_dc_topo.py
+        --onos-ip onos
+        --p4-dir /app/p4/build
+        --topo ${TOPO_NAME:-research_dc}
+    networks:
+      - idn-net
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9001/topology', timeout=5)"]
+      interval: 15s
+      timeout: 8s
+      retries: 10
+      start_period: 30s
+networks:
+  idn-net:
+    name: idn-net
+    # The one-command installer creates this stable shared network before
+    # bringing up either compose layer.  Mark it external here too; otherwise
+    # a fresh host can reject an already-created network as not owned by this
+    # compose project.
+    external: true

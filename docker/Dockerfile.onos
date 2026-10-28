@@ -1,0 +1,16 @@
+FROM onosproject/onos:2.7.0
+
+# Consume the freshly tested Maven output.  This prevents the image from
+# silently shipping an older OAR after P4Info or interpreter changes.
+COPY onos-pipeconf/target/onos-pipelines-idn-basic-1.0.0-SNAPSHOT.oar /tmp/idn-pipeconf.oar
+
+
+# Copy custom startup script
+COPY docker/onos/onos-start-with-pipeconf.sh /root/onos/bin/onos-start-with-pipeconf.sh
+RUN sed -i 's/\r$//' /root/onos/bin/onos-start-with-pipeconf.sh \
+    && chmod +x /root/onos/bin/onos-start-with-pipeconf.sh
+
+# Use custom entrypoint that installs pipeconf after ONOS is ready
+ENTRYPOINT ["/root/onos/bin/onos-start-with-pipeconf.sh"]
+
+# Activate ONOS apps from onos-start-with-pipeconf.sh after core services are stable.

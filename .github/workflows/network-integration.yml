@@ -1,0 +1,74 @@
+name: Network integration (manual)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  network:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      IDN_MOCK_MODE: 'true'
+      FLOW_DELIVERY_MODE: onos_rest
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+      MININET_PROBE_URL: http://localhost:9001
+      IDN_NODE_TIMEOUT_VERIFY: '90'
+      IDN_NODE_TIMEOUT_SENSE: '60'
+      IDN_NODE_TIMEOUT_PARSE: '90'
+      IDN_NODE_TIMEOUT_GENERATE: '60'
+      IDN_NODE_TIMEOUT_EXECUTE: '60'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+      - run: pip install -r idn-system/requirements.txt
+      - run: bash p4/compile.sh
+      - run: bash onos-pipeconf/install-onos-deps.sh
+      - run: bash onos-pipeconf/build.sh
+      - run: docker compose -f docker-compose.infra.yml -f docker-compose.app.yml up -d --build --wait --wait-timeout 900
+      - name: Require six available switches
+        run: |
+          python - <<'PY'
+          import base64, json, time, urllib.request
+          for attempt in range(60):
+              try:
+                  req = urllib.request.Request('http://localhost:8181/onos/v1/devices')
+                  req.add_header('Authorization', 'Basic ' + base64.b64encode(b'onos:rocks').decode())
+                  devices = json.load(urllib.request.urlopen(req, timeout=5))['devices']
+                  if len(devices) == 6 and all(d['available'] for d in devices):
+                      break
+              except Exception:
+                  pass
+              time.sleep(5)
+          else:
+              raise SystemExit('Expected six available switches')
+          PY
+      - run: python -m pytest tests -m 'integration or p4consistency' -v -r s --junitxml=../.release-audit/network-results.xml
+        working-directory: idn-system
+      - name: Reject skipped network checks
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('.release-audit/network-results.xml').getroot()
+          assert root.findall('.//testcase') and not root.findall('.//skipped'), 'Network checks must run, not skip'
+          PY
+      - name: Verify the real self-healing demonstration
+        working-directory: idn-system
+        env:
+          IDN_INT_PROBE_ENABLED: 'true'
+        run: |
+          python - <<'PY'
+          import asyncio, json
+          from api.demo import run_self_healing_demo
+          report = asyncio.run(run_self_healing_demo(reset_first=True, include_iperf=True, clear_after=True))
+          with open('../.release-audit/network-healing.json', 'w') as stream:
+              json.dump(report, stream, indent=2)
+          assert report['status'] == 'success', 'Self-healing did not succeed'
+          PY
+      - name: Cleanup runner
+        if: always()
+        run: docker compose -f docker-compose.infra.yml -f docker-compose.app.yml down -v

@@ -1,0 +1,159 @@
+/* 共享玻璃拟态面板样式 — 4 个 dashboard 视图共用 */
+
+.panel {
+  min-width: 0;
+  min-height: 0;
+  padding: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+}
+
+.section-card {
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid rgba(203, 213, 225, 0.78);
+  border-radius: 15px;
+  background: rgba(248, 250, 252, 0.7);
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.page-head p {
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.page-head h2 {
+  margin: 0;
+  margin-top: 4px;
+  color: #0f172a;
+  font-size: 1.22rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.section-title h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.section-title em {
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #0369a1;
+  background: rgba(224, 242, 254, 0.86);
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.status-pill {
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #0369a1;
+  background: rgba(224, 242, 254, 0.86);
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.status-pill.success {
+  color: #047857;
+  background: rgba(209, 250, 229, 0.84);
+}
+
+.note {
+  display: block;
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 8px 10px;
+  margin: 12px 0 0;
+}
+
+dt {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+dd {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+/* ── Chart card — 所有 ECharts 图表的统一容器 + hover 弹性跳动 ── */
+
+.chart-card {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.66));
+  border: 1px solid var(--glass-border, rgba(226, 232, 240, 0.88));
+  border-radius: var(--radius-card, 15px);
+  box-shadow: var(--glass-shadow, 0 26px 60px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.86));
+  backdrop-filter: blur(14px);
+  padding: var(--space-md, 14px);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-card:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 32px 72px rgba(15, 23, 42, 0.12),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.chart-card__title {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #64748b);
+  margin: 0 0 10px 0;
+}
+
+.chart-card__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+@media (max-width: 980px) {
+  .panel {
+    overflow: auto;
+  }
+}

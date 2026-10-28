@@ -1,0 +1,14 @@
+# Production overlay for a clean server deployment.
+#
+# The development compose file deliberately bind-mounts source code and
+# ``./p4/build``.  On a fresh clone that host directory may be empty and would
+# hide the artifacts copied into the backend image.  This overlay removes only
+# the backend development mounts; the image's tested P4 artifacts are then the
+# single source used by both the backend and the Mininet image.
+services:
+  idn-system:
+    # ``!override`` replaces the development bind-mount list with exactly the
+    # durable application-data volume.  ``!reset`` would clear the entire
+    # field, silently removing /app/data persistence too.
+    volumes: !override
+      - idn-app-data:/app/data

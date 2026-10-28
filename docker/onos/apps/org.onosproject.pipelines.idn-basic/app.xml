@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app name="org.onosproject.pipelines.idn-basic" origin="ON.Lab" version="1.0.0.SNAPSHOT"
+     title="IDN Basic Pipeconf" category="Pipeline" url="http://onosproject.org">
+    <description>Custom pipeconf for idn_basic.p4 pipeline</description>
+</app>

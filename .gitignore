@@ -1,0 +1,126 @@
+# NetPulse repository hygiene
+# Keep source, tests, topology/P4 source, Compose files, documentation and safe templates.
+
+# Environment variables and credentials (allow templates only)
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Python virtual environments, bytecode and test/analysis caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.egg-info/
+.venv/
+venv/
+env/
+virtualenv/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.ruff_cache/
+
+# Node/Vite dependencies, cache and generated assets
+**/node_modules/
+.npm-cache/
+**/.npm-cache/
+.pnpm-store/
+**/dist/
+**/build/
+*.tsbuildinfo
+
+# Runtime data, databases and logs
+/idn-system/data/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.log.*
+logs/
+*.pid
+
+# Docker, Java/Maven and ONOS/Pipeconf generated artifacts
+.m2-cache/
+.tmp-onos-classes/
+.tmp-onos-deps/
+.tmp-onos-package/
+onos-pipeconf/target/
+onos-pipeconf/onos-maven-repo/
+**/target/
+*.class
+
+# P4 compiler/build products; retain P4 source and authored topology/configuration
+p4/build/
+p4/p4info.env
+*.p4info.txt
+*.p4i
+*.p4rt
+*.bmv2/
+p4runtime/p4info/
+/docker/onos/apps/**/idn-pipeconf.oar
+/docker/onos/karaf-deploy/*.oar
+/docker/onos/karaf-deploy/*.jar
+
+# Local runtime, report/browser artifacts and historical temporary evidence
+tmp/
+temp/
+.tmp/
+deliverables/
+validation/
+comprehensive_e2e_results.json
+SYSTEM_FIX_RESULT.md
+.deploy-images/
+
+# Documentation is part of the repository; private delivery material is
+# excluded by scripts/export_release.py rather than by Git ignore rules.
+state_*.json
+topology_cache.json
+network_snapshot_cache.json
+
+# Coverage/profiling and temporary editor files
+*.prof
+*.profraw
+*.lprof
+*.tmp
+*.bak
+*.orig
+*~
+*.swp
+*.swo
+
+# IDE and operating-system user state
+.idea/
+.vscode/
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.lnk
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Docker local overrides are machine-specific unless deliberately promoted.
+docker-compose.override.yml
+
+# Release audit reports stay local; they may quote sensitive locations.
+.release-audit/

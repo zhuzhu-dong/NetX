@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# Virtual env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Tests & cache
+.pytest_cache/
+**/.pytest_cache/
+*.log
+frontend/node_modules/
+frontend/dist/
+frontend/.npm-cache/
+
+# Data
+idn-system/data/
+
+# Docs (not needed at runtime)
+docs/
+
+# Task spec
+任务书.md
+基于P4的多智能体意图驱动自治网络系统.txt

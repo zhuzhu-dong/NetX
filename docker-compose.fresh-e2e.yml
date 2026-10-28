@@ -1,0 +1,39 @@
+# Isolated local acceptance overlay for a genuine empty-volume cold start.
+#
+# Production uses docker-compose.prod.yml and the stable idn-net/idn-app-data
+# names.  This overlay is intentionally opt-in: it lets CI or a developer run
+# the same images beside an existing deployment without reusing its database,
+# ONOS, Mininet, host ports, or Docker network.
+name: idn-fresh-e2e
+
+services:
+  onos:
+    container_name: idn-fresh-e2e-onos
+    ports: !reset
+      - "18181:8181"
+      - "18101:8101"
+      - "16653:6653"
+
+  mininet:
+    container_name: idn-fresh-e2e-mininet
+
+  idn-system:
+    container_name: idn-fresh-e2e-backend
+    ports: !reset
+      - "18000:8000"
+
+  idn-frontend:
+    container_name: idn-fresh-e2e-frontend
+    ports: !reset
+      - "15173:5173"
+
+networks:
+  idn-net:
+    name: idn-fresh-e2e-net
+    external: false
+
+volumes:
+  idn-app-data:
+    name: idn-fresh-e2e-app-data
+  idn-frontend-node-modules:
+    name: idn-fresh-e2e-node-modules

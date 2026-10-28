@@ -1,0 +1,30 @@
+{
+  "schema_version": 2,
+  "parser_version": "idn-int-v2",
+  "allowed_parser_versions": {
+    "idn-int-v2": {"hop_record_bytes": 26, "payload_prefix_bytes": 6}
+  },
+  "byte_order": "big",
+  "supported_hop_bytes": [26],
+  "max_hop_latency_ns": 100000000,
+  "degraded_queue_occupancy": 10000,
+  "max_queue_occupancy": 1000000,
+  "allowed_devices": {
+    "device:bmv2:1": {"switch_name": "s_core1", "ports": [1, 2, 3]},
+    "device:bmv2:2": {"switch_name": "s_core2", "ports": [1, 2, 3]},
+    "device:bmv2:3": {"switch_name": "s_agg_r", "ports": [1, 2, 3, 4, 5]},
+    "device:bmv2:4": {"switch_name": "s_agg_d", "ports": [1, 2, 3, 4]},
+    "device:bmv2:5": {"switch_name": "s_access_r", "ports": [1, 2, 3]},
+    "device:bmv2:6": {"switch_name": "s_access_d", "ports": [1, 2, 3]}
+  },
+  "allowed_device_links": [
+    ["device:bmv2:5", "device:bmv2:3"],
+    ["device:bmv2:3", "device:bmv2:1"],
+    ["device:bmv2:3", "device:bmv2:2"],
+    ["device:bmv2:1", "device:bmv2:2"],
+    ["device:bmv2:1", "device:bmv2:4"],
+    ["device:bmv2:2", "device:bmv2:4"],
+    ["device:bmv2:4", "device:bmv2:6"],
+    ["device:bmv2:3", "device:bmv2:4"]
+  ]
+}

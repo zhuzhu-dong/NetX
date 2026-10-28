@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "topology_name": "research_dc",
+  "device_switch_map": {
+    "device:bmv2:1": "s_core1",
+    "device:bmv2:2": "s_core2",
+    "device:bmv2:3": "s_agg_r",
+    "device:bmv2:4": "s_agg_d",
+    "device:bmv2:5": "s_access_r",
+    "device:bmv2:6": "s_access_d"
+  },
+  "host_attachment_map": {
+    "h_research": {"device_id": "device:bmv2:5", "switch": "s_access_r", "port": 1},
+    "h_video": {"device_id": "device:bmv2:5", "switch": "s_access_r", "port": 2},
+    "h_ai": {"device_id": "device:bmv2:3", "switch": "s_agg_r", "port": 1},
+    "h_dc": {"device_id": "device:bmv2:6", "switch": "s_access_d", "port": 2},
+    "h_backup": {"device_id": "device:bmv2:6", "switch": "s_access_d", "port": 3}
+  },
+  "physical_links": [
+    {"link_id": "s_access_r-s_agg_r", "device_a": "device:bmv2:5", "port_a": 3, "device_b": "device:bmv2:3", "port_b": 2, "capacity_mbps": 100},
+    {"link_id": "s_agg_r-s_core1", "device_a": "device:bmv2:3", "port_a": 3, "device_b": "device:bmv2:1", "port_b": 1, "capacity_mbps": 1000},
+    {"link_id": "s_agg_r-s_core2", "device_a": "device:bmv2:3", "port_a": 4, "device_b": "device:bmv2:2", "port_b": 1, "capacity_mbps": 1000},
+    {"link_id": "s_core1-s_core2", "device_a": "device:bmv2:1", "port_a": 2, "device_b": "device:bmv2:2", "port_b": 2, "capacity_mbps": 1000},
+    {"link_id": "s_core1-s_agg_d", "device_a": "device:bmv2:1", "port_a": 3, "device_b": "device:bmv2:4", "port_b": 1, "capacity_mbps": 1000},
+    {"link_id": "s_core2-s_agg_d", "device_a": "device:bmv2:2", "port_a": 3, "device_b": "device:bmv2:4", "port_b": 2, "capacity_mbps": 1000},
+    {"link_id": "s_agg_d-s_access_d", "device_a": "device:bmv2:4", "port_a": 3, "device_b": "device:bmv2:6", "port_b": 1, "capacity_mbps": 1000},
+    {"link_id": "s_agg_r-s_agg_d", "device_a": "device:bmv2:3", "port_a": 5, "device_b": "device:bmv2:4", "port_b": 4, "capacity_mbps": 100}
+  ],
+  "paths": [
+    {
+      "path_id": "research_dc_primary",
+      "name": "科研楼到数据中心主路径",
+      "description": "h_research 经 s_core1 到 h_dc 的低成本主路径",
+      "src_host": "h_research",
+      "dst_host": "h_dc",
+      "role": "PRIMARY",
+      "devices": ["device:bmv2:5", "device:bmv2:3", "device:bmv2:1", "device:bmv2:4", "device:bmv2:6"],
+      "switches": ["s_access_r", "s_agg_r", "s_core1", "s_agg_d", "s_access_d"],
+      "expected_links": [
+        {"link_id": "s_access_r-s_agg_r", "from_device": "device:bmv2:5", "to_device": "device:bmv2:3", "from_port": 3, "to_port": 2, "capacity_mbps": 100},
+        {"link_id": "s_agg_r-s_core1", "from_device": "device:bmv2:3", "to_device": "device:bmv2:1", "from_port": 3, "to_port": 1, "capacity_mbps": 1000},
+        {"link_id": "s_core1-s_agg_d", "from_device": "device:bmv2:1", "to_device": "device:bmv2:4", "from_port": 3, "to_port": 1, "capacity_mbps": 1000},
+        {"link_id": "s_agg_d-s_access_d", "from_device": "device:bmv2:4", "to_device": "device:bmv2:6", "from_port": 3, "to_port": 1, "capacity_mbps": 1000}
+      ],
+      "qos_egress_candidates": [
+        {"device_id": "device:bmv2:5", "switch": "s_access_r", "peer_device_id": "device:bmv2:3", "peer_switch": "s_agg_r", "egress_port": 3, "interface": "s_access_r-eth3", "link_id": "s_access_r-s_agg_r", "capacity_mbps": 100}
+      ],
+      "path_capacity_mbps": 100,
+      "bottleneck_link_id": "s_access_r-s_agg_r",
+      "enabled": true
+    },
+    {
+      "path_id": "research_dc_backup",
+      "name": "科研楼到数据中心备份路径",
+      "description": "h_research 经 s_core2 到 h_dc 的受控备份路径",
+      "src_host": "h_research",
+      "dst_host": "h_dc",
+      "role": "BACKUP",
+      "devices": ["device:bmv2:5", "device:bmv2:3", "device:bmv2:2", "device:bmv2:4", "device:bmv2:6"],
+      "switches": ["s_access_r", "s_agg_r", "s_core2", "s_agg_d", "s_access_d"],
+      "expected_links": [
+        {"link_id": "s_access_r-s_agg_r", "from_device": "device:bmv2:5", "to_device": "device:bmv2:3", "from_port": 3, "to_port": 2, "capacity_mbps": 100},
+        {"link_id": "s_agg_r-s_core2", "from_device": "device:bmv2:3", "to_device": "device:bmv2:2", "from_port": 4, "to_port": 1, "capacity_mbps": 1000},
+        {"link_id": "s_core2-s_agg_d", "from_device": "device:bmv2:2", "to_device": "device:bmv2:4", "from_port": 3, "to_port": 2, "capacity_mbps": 1000},
+        {"link_id": "s_agg_d-s_access_d", "from_device": "device:bmv2:4", "to_device": "device:bmv2:6", "from_port": 3, "to_port": 1, "capacity_mbps": 1000}
+      ],
+      "qos_egress_candidates": [
+        {"device_id": "device:bmv2:5", "switch": "s_access_r", "peer_device_id": "device:bmv2:3", "peer_switch": "s_agg_r", "egress_port": 3, "interface": "s_access_r-eth3", "link_id": "s_access_r-s_agg_r", "capacity_mbps": 100}
+      ],
+      "path_capacity_mbps": 100,
+      "bottleneck_link_id": "s_access_r-s_agg_r",
+      "enabled": true
+    },
+    {
+      "path_id": "research_video_primary",
+      "service_id": "research_video",
+      "name": "视频主机到数据中心主路径",
+      "description": "h_video 经 s_core1 到 h_dc 的主路径",
+      "src_host": "h_research",
+      "dst_host": "h_dc",
+      "role": "PRIMARY",
+      "devices": ["device:bmv2:5", "device:bmv2:3", "device:bmv2:1", "device:bmv2:4", "device:bmv2:6"],
+      "switches": ["s_access_r", "s_agg_r", "s_core1", "s_agg_d", "s_access_d"],
+      "expected_links": [
+        {"link_id": "s_access_r-s_agg_r", "from_device": "device:bmv2:5", "to_device": "device:bmv2:3", "from_port": 3, "to_port": 2, "capacity_mbps": 100},
+        {"link_id": "s_agg_r-s_core1", "from_device": "device:bmv2:3", "to_device": "device:bmv2:1", "from_port": 3, "to_port": 1, "capacity_mbps": 1000},
+        {"link_id": "s_core1-s_agg_d", "from_device": "device:bmv2:1", "to_device": "device:bmv2:4", "from_port": 3, "to_port": 1, "capacity_mbps": 1000},
+        {"link_id": "s_agg_d-s_access_d", "from_device": "device:bmv2:4", "to_device": "device:bmv2:6", "from_port": 3, "to_port": 1, "capacity_mbps": 1000}
+      ],
+      "qos_egress_candidates": [
+        {"device_id": "device:bmv2:5", "switch": "s_access_r", "peer_device_id": "device:bmv2:3", "peer_switch": "s_agg_r", "egress_port": 3, "interface": "s_access_r-eth3", "link_id": "s_access_r-s_agg_r", "capacity_mbps": 100}
+      ],
+      "path_capacity_mbps": 100,
+      "bottleneck_link_id": "s_access_r-s_agg_r",
+      "enabled": true
+    },
+    {
+      "path_id": "research_video_backup",
+      "service_id": "research_video",
+      "name": "视频主机到数据中心备份路径",
+      "description": "h_video 经 s_core2 到 h_dc 的备份路径",
+      "src_host": "h_research",
+      "dst_host": "h_dc",
+      "role": "BACKUP",
+      "devices": ["device:bmv2:5", "device:bmv2:3", "device:bmv2:2", "device:bmv2:4", "device:bmv2:6"],
+      "switches": ["s_access_r", "s_agg_r", "s_core2", "s_agg_d", "s_access_d"],
+      "expected_links": [
+        {"link_id": "s_access_r-s_agg_r", "from_device": "device:bmv2:5", "to_device": "device:bmv2:3", "from_port": 3, "to_port": 2, "capacity_mbps": 100},
+        {"link_id": "s_agg_r-s_core2", "from_device": "device:bmv2:3", "to_device": "device:bmv2:2", "from_port": 4, "to_port": 1, "capacity_mbps": 1000},
+        {"link_id": "s_core2-s_agg_d", "from_device": "device:bmv2:2", "to_device": "device:bmv2:4", "from_port": 3, "to_port": 2, "capacity_mbps": 1000},
+        {"link_id": "s_agg_d-s_access_d", "from_device": "device:bmv2:4", "to_device": "device:bmv2:6", "from_port": 3, "to_port": 1, "capacity_mbps": 1000}
+      ],
+      "qos_egress_candidates": [
+        {"device_id": "device:bmv2:5", "switch": "s_access_r", "peer_device_id": "device:bmv2:3", "peer_switch": "s_agg_r", "egress_port": 3, "interface": "s_access_r-eth3", "link_id": "s_access_r-s_agg_r", "capacity_mbps": 100}
+      ],
+      "path_capacity_mbps": 100,
+      "bottleneck_link_id": "s_access_r-s_agg_r",
+      "enabled": true
+    }
+  ]
+}

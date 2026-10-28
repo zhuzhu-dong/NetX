@@ -1,0 +1,51 @@
+import js from "@eslint/js";
+import pluginVue from "eslint-plugin-vue";
+
+export default [
+  js.configs.recommended,
+  ...pluginVue.configs["flat/recommended"],
+  {
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        EventSource: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        fetch: "readonly",
+        console: "readonly",
+        URLSearchParams: "readonly",
+        Date: "readonly",
+        parseInt: "readonly",
+        Math: "readonly",
+        JSON: "readonly",
+        Object: "readonly",
+        Array: "readonly",
+        String: "readonly",
+        Number: "readonly",
+        Boolean: "readonly",
+        Map: "readonly",
+        Set: "readonly",
+        Promise: "readonly",
+        Error: "readonly",
+        RegExp: "readonly",
+        document: "readonly",
+        window: "readonly",
+        navigator: "readonly",
+        location: "readonly",
+      },
+    },
+    rules: {
+      "no-undef": "error",
+      "vue/no-unused-components": "warn",
+      "vue/valid-v-bind": "error",
+      "vue/valid-v-model": "error",
+      "vue/require-explicit-emits": "warn",
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "no-console": "off",
+      "vue/multi-word-component-names": "off",
+    },
+  },
+];

@@ -1,0 +1,63 @@
+/* NetPulse Design Tokens — 全局 CSS 自定义属性 */
+
+:root {
+  /* ── 文本颜色 ── */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-body: #334155;
+  --color-text-muted: #94a3b8;
+
+  /* ── 强调色 ── */
+  --color-accent-cyan: #38bdf8;
+  --color-accent-sky: #0ea5e9;
+  --color-accent-indigo: #6366f1;
+  --color-accent-purple: #8b5cf6;
+
+  /* ── 语义状态色 ── */
+  --color-success: #047857;
+  --color-success-bg: rgba(209, 250, 229, 0.84);
+  --color-failure: #b91c1c;
+  --color-failure-bg: rgba(254, 226, 226, 0.9);
+  --color-warning: #b45309;
+  --color-warning-bg: rgba(254, 243, 199, 0.9);
+  --color-info: #0369a1;
+  --color-info-bg: rgba(224, 242, 254, 0.86);
+
+  /* ── 玻璃拟态 ── */
+  --glass-bg: rgba(255, 255, 255, 0.66);
+  --glass-border: rgba(226, 232, 240, 0.88);
+  --glass-shadow: 0 26px 60px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  --glass-blur: blur(14px);
+  --card-bg: rgba(248, 250, 252, 0.7);
+  --card-border: rgba(203, 213, 225, 0.78);
+
+  /* ── 圆角 ── */
+  --radius-panel: 18px;
+  --radius-card: 15px;
+  --radius-input: 12px;
+  --radius-pill: 999px;
+
+  /* ── 间距 ── */
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 14px;
+  --space-lg: 18px;
+  --space-xl: 24px;
+
+  /* ── 字体 ── */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ── 图表色板 ── */
+  --chart-cyan: #38bdf8;
+  --chart-blue: #0ea5e9;
+  --chart-indigo: #6366f1;
+  --chart-purple: #8b5cf6;
+  --chart-green: #10b981;
+  --chart-orange: #f59e0b;
+  --chart-red: #ef4444;
+  --chart-slate: #94a3b8;
+
+  /* ── 图表卡片 hover 动效 ── */
+  --chart-hover-elevation: 0 32px 72px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}

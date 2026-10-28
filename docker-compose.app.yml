@@ -1,0 +1,198 @@
+# ============================================================
+# docker-compose.app.yml
+# 应用层: IDN-System FastAPI 服务
+# 依赖 infra 层 (ONOS + Mininet) 已启动
+# ============================================================
+# 启动前: 确保 docker-compose.infra.yml 已运行
+# 启动: docker-compose -f docker-compose.app.yml up
+# ============================================================
+
+name: idn-system
+
+services:
+  # ── IDN-System 主服务 ──
+  idn-system:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: idn-backend
+    ports:
+      # Backend is published only to the host reverse proxy.  Never expose
+      # the intent API directly to the public Internet.
+      - "127.0.0.1:8000:8000"
+    environment:
+      # ── ONOS 连接 ──
+      - ONOS_HOST=onos
+      - ONOS_PORT=8181
+      - ONOS_USERNAME=onos
+      - ONOS_PASSWORD=rocks
+      - ONOS_FLOW_VERIFY_TIMEOUT_SECONDS=${ONOS_FLOW_VERIFY_TIMEOUT_SECONDS:-40}
+      - ONOS_FLOW_VERIFY_INTERVAL_SECONDS=${ONOS_FLOW_VERIFY_INTERVAL_SECONDS:-2}
+      - IDN_VERIFY_EXECUTION_READBACK_TIMEOUT_SECONDS=${IDN_VERIFY_EXECUTION_READBACK_TIMEOUT_SECONDS:-60}
+      - ONOS_COUNTER_VERIFY_TIMEOUT_SECONDS=${ONOS_COUNTER_VERIFY_TIMEOUT_SECONDS:-35}
+      # ── P4Runtime 直连 ──
+      - P4RUNTIME_SWITCH_HOST=mininet
+      - P4RUNTIME_SWITCH_PORT=50051
+      # ── LLM 配置 (可选: 不设则用 mock 模式) ──
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-qwen-plus}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0}
+      - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-4096}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+      - LOCAL_QWEN_BASE_URL=${LOCAL_QWEN_BASE_URL:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - WANGTIAO2026_API_KEY=${WANGTIAO2026_API_KEY:-}
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-}
+      # ── 运行模式 ──
+      - IDN_MOCK_MODE=${IDN_MOCK_MODE:-false}
+      # Generic validation hook; blank/default-off in ordinary deployments.
+      - IDN_EXECUTION_FAILPOINT=${IDN_EXECUTION_FAILPOINT:-}
+      # Production startup restores desired state only. Formal probing,
+      # assurance and LLM/agent work require an explicit operator trigger.
+      - IDN_LLM_STARTUP_PROBE_ENABLED=${IDN_LLM_STARTUP_PROBE_ENABLED:-false}
+      - IDN_AUTO_BOOTSTRAP_CONNECTIVITY=${IDN_AUTO_BOOTSTRAP_CONNECTIVITY:-false}
+      # A backend image deployment is not a managed data-plane restart; explicit real recovery carries a fenced write context.
+      - IDN_PRODUCTION_RESTART_RECOVERY_ENABLED=${IDN_PRODUCTION_RESTART_RECOVERY_ENABLED:-false}
+      # Keep the resident reconciler independently controllable for bounded
+      # operator-triggered recovery windows.  The API still uses the same
+      # NetworkReconciler, lease and fencing path; this only prevents the
+      # background loop from racing that bounded run.
+      - IDN_NETWORK_RECONCILER_ENABLED=${IDN_NETWORK_RECONCILER_ENABLED:-true}
+      - IDN_NETWORK_WRITE_FENCING_REQUIRED=true
+      - IDN_RECOVERY_FULL_READBACK_REQUIRED=true
+      - IDN_ENABLE_STARTUP_PROJECTION_REPAIR=false
+      - IDN_ENABLE_STARTUP_TRAFFIC_ORCHESTRATION=false
+      - IDN_PROBE_SCHEDULER_ENABLED=${IDN_PROBE_SCHEDULER_ENABLED:-false}
+      - IDN_FAULT_CONTROLLER_ENABLED=${IDN_FAULT_CONTROLLER_ENABLED:-false}
+      - IDN_INTENT_ASSURANCE_ENABLED=${IDN_INTENT_ASSURANCE_ENABLED:-false}
+      - MININET_PROBE_URL=${MININET_PROBE_URL:-http://mininet:9001}
+      - PROBE_TIMEOUT=${PROBE_TIMEOUT:-60}
+      - IDN_QOS_ENFORCEMENT_REQUIRED=${IDN_QOS_ENFORCEMENT_REQUIRED:-true}
+      - IDN_QOS_LINK_CEIL_MBPS=${IDN_QOS_LINK_CEIL_MBPS:-100}
+      - IDN_QOS_DEFAULT_CLASS_RATE_MBPS=${IDN_QOS_DEFAULT_CLASS_RATE_MBPS:-1}
+      - IDN_QOS_KPI_TOLERANCE_RATIO=${IDN_QOS_KPI_TOLERANCE_RATIO:-0.95}
+      - IDN_QOS_RATE_LIMIT_TOLERANCE_RATIO=${IDN_QOS_RATE_LIMIT_TOLERANCE_RATIO:-1.10}
+      - IDN_QOS_KPI_DURATION_SECS=${IDN_QOS_KPI_DURATION_SECS:-15}
+      - IDN_AUTO_HEAL_CONGESTION=${IDN_AUTO_HEAL_CONGESTION:-true}
+      - IDN_HEAL_REROUTE=${IDN_HEAL_REROUTE:-true}
+      - IDN_HEALING_PATH_PRIORITY=${IDN_HEALING_PATH_PRIORITY:-200}
+      - IDN_HEAL_THROTTLE_LOW_PRIORITY=${IDN_HEAL_THROTTLE_LOW_PRIORITY:-false}
+      - IDN_HEAL_LOW_PRIORITY_LIMIT_MBPS=${IDN_HEAL_LOW_PRIORITY_LIMIT_MBPS:-0}
+      - IDN_HEAL_LOW_PRIORITY_SRC_CIDR=${IDN_HEAL_LOW_PRIORITY_SRC_CIDR:-}
+      - IDN_HEAL_LOW_PRIORITY_DST_CIDR=${IDN_HEAL_LOW_PRIORITY_DST_CIDR:-}
+      - IDN_HEAL_LOW_PRIORITY_BURST_KB=${IDN_HEAL_LOW_PRIORITY_BURST_KB:-512}
+      - IDN_HEAL_REVERIFY_WAIT_SECS=${IDN_HEAL_REVERIFY_WAIT_SECS:-2}
+      - STATUS_VERIFIER_RUN_IPERF=${STATUS_VERIFIER_RUN_IPERF:-true}
+      - IDN_EMBEDDED_WORKER_ENABLED=true
+      # ── Checkpoint ──
+      - CHECKPOINT_BACKEND=sqlite
+      - SQLITE_DB_PATH=/app/data/checkpoint.db
+      - IDN_APP_DB_PATH=/app/data/app.db
+      - IDN_SQLITE_JOURNAL_MODE=${IDN_SQLITE_JOURNAL_MODE:-WAL}
+      - IDN_SQLITE_BUSY_TIMEOUT_MS=30000
+      - IDN_API_KEY=${IDN_API_KEY:-demo-key-xxx}
+      # Operator session auth is fail-closed when explicitly enabled.  Secrets
+      # are supplied only by the deployment environment, never by the browser
+      # bundle or repository defaults.
+      - IDN_OPERATOR_AUTH_ENABLED=${IDN_OPERATOR_AUTH_ENABLED:-false}
+      - IDN_OPERATOR_USERNAME=${IDN_OPERATOR_USERNAME:-}
+      - IDN_OPERATOR_PASSWORD_HASH=${IDN_OPERATOR_PASSWORD_HASH:-}
+      - IDN_SESSION_SECRET=${IDN_SESSION_SECRET:-}
+      - IDN_SESSION_TTL_SECONDS=${IDN_SESSION_TTL_SECONDS:-28800}
+      - IDN_COOKIE_SECURE=${IDN_COOKIE_SECURE:-false}
+      - IDN_CORS_ORIGINS=${IDN_CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
+      # ── 节点级超时 (秒) — LLM 调用需要足够时间 ──
+      - IDN_NODE_TIMEOUT_PARSE=${IDN_NODE_TIMEOUT_PARSE:-90}
+      - IDN_NODE_TIMEOUT_CHECK=${IDN_NODE_TIMEOUT_CHECK:-90}
+      - IDN_NODE_TIMEOUT_GENERATE=${IDN_NODE_TIMEOUT_GENERATE:-60}
+      - IDN_NODE_TIMEOUT_EXECUTE=${IDN_NODE_TIMEOUT_EXECUTE:-60}
+      - IDN_NODE_TIMEOUT_SAFETY_COUNCIL=${IDN_NODE_TIMEOUT_SAFETY_COUNCIL:-60}
+      - IDN_NODE_TIMEOUT_VERIFY=${IDN_NODE_TIMEOUT_VERIFY:-120}
+      - IDN_JOB_TIMEOUT_SECONDS=${IDN_JOB_TIMEOUT_SECONDS:-600}
+      - IDN_INT_PROBE_ENABLED=${IDN_INT_PROBE_ENABLED:-true}
+      - TOPOLOGY_PATHS_FILE=/app/config/topology_paths.json
+      - SERVICE_PROFILES_FILE=/app/config/service_profiles.json
+      - IDN_DEMO_FAILED_SWITCHES=${IDN_DEMO_FAILED_SWITCHES:-}
+    volumes:
+      - ./idn-system:/app
+      - ./:/workspace
+      - ./p4/build:/app/p4/build
+      - idn-app-data:/app/data
+    networks:
+      - idn-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/ready', timeout=5)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── KPI Watcher（独立后台自治监控） ──
+  idn-watcher:
+    profiles: ["watcher"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: idn-watcher
+    command: ["python", "-m", "api.watcher"]
+    environment:
+      - IDN_API_BASE_URL=http://idn-system:8000/api/v1
+      - IDN_APP_DB_PATH=/app/data/app.db
+      - IDN_SQLITE_JOURNAL_MODE=${IDN_SQLITE_JOURNAL_MODE:-WAL}
+      - IDN_WATCHER_ENABLED=${IDN_WATCHER_ENABLED:-false}
+      - IDN_WATCHER_SERVICE_ID=${IDN_WATCHER_SERVICE_ID:-}
+      - IDN_WATCHER_LIGHT_INTERVAL_SEC=${IDN_WATCHER_LIGHT_INTERVAL_SEC:-5}
+      - IDN_WATCHER_DEEP_EVERY_N=${IDN_WATCHER_DEEP_EVERY_N:-6}
+      - IDN_WATCHER_DEBOUNCE_SAMPLES=${IDN_WATCHER_DEBOUNCE_SAMPLES:-3}
+      - IDN_WATCHER_COOLDOWN_SEC=${IDN_WATCHER_COOLDOWN_SEC:-600}
+      - IDN_WATCHER_MAX_LATENCY_MS=${IDN_WATCHER_MAX_LATENCY_MS:-10}
+      - IDN_WATCHER_MAX_LOSS_RATE=${IDN_WATCHER_MAX_LOSS_RATE:-0.01}
+      - IDN_WATCHER_MIN_THROUGHPUT_MBPS=${IDN_WATCHER_MIN_THROUGHPUT_MBPS:-10}
+      - IDN_WATCHER_THROUGHPUT_REQUIRES_IPERF=${IDN_WATCHER_THROUGHPUT_REQUIRES_IPERF:-true}
+      - IDN_WATCHER_QUEUE_DEPTH_BYTES=${IDN_WATCHER_QUEUE_DEPTH_BYTES:-65536}
+      - IDN_WATCHER_OVERLIMITS_DELTA=${IDN_WATCHER_OVERLIMITS_DELTA:-10}
+      - IDN_WATCHER_DROPS_DELTA=${IDN_WATCHER_DROPS_DELTA:-1}
+      - IDN_API_KEY=${IDN_API_KEY:-demo-key-xxx}
+    depends_on:
+      - idn-system
+    volumes:
+      - idn-app-data:/app/data
+    networks:
+      - idn-net
+    restart: unless-stopped
+
+  # Immutable Vue production bundle.  Vite is used only in the Docker build
+  # stage; this container serves the completed dist directory via Nginx.
+  idn-frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: idn-system-frontend:0810-p1
+    container_name: idn-frontend
+    ports:
+      # Browser traffic reaches this private static server only through the
+      # host Nginx proxy.  It is never directly published to the Internet.
+      - "127.0.0.1:5173:5173"
+    networks:
+      - idn-net
+    depends_on:
+      idn-system:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/frontend-healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  idn-net:
+    name: idn-net
+    external: true
+
+volumes:
+  idn-app-data:
